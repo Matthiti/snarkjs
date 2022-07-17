@@ -39,6 +39,7 @@ import * as groth16 from "./src/groth16.js";
 import * as plonk from "./src/plonk.js";
 import * as wtns from "./src/wtns.js";
 import * as curves from "./src/curves.js";
+import * as saver from "./src/saver.js";
 import path from "path";
 
 import Logger from "logplease";
@@ -296,6 +297,34 @@ const commands = [
         alias: ["pkv"],
         options: "-verbose|v",
         action: plonkVerify
+    },
+    {
+        cmd: "saver keygen [circuit.zkey] [saver_pk.json] [saver_sk.json] [saver_vk.json] [n_encryptions]",
+        description: "Generate keys for SAVER",
+        alias: ["sk"],
+        options: "-verbose|v -entropy|e",
+        action: saverKeygen
+    },
+    {
+        cmd: "saver encrypt [input.json] [circuit.wasm] [circuit.zkey] [saver_pk.json] [proof.json] [public.json] [ciphertext.json]",
+        description: "Encrypt and prove using SAVER",
+        alias: ["se"],
+        options: "-verbose|v -entropy|e",
+        action: saverEncrypt
+    },
+    {
+        cmd: "saver verify [verification_key.json] [saver_pk.json] [ciphertext.json] [public.json] [proof.json]",
+        description: "Verify a SAVER encryption and the corresponding proof",
+        alias: ["sv"],
+        options: "-verbose|v",
+        action: saverVerifyEncryption
+    },
+    {
+        cmd: "saver decrypt [saver_sk.json] [saver_vk.json] [ciphertext.json] [plaintext.json] [nu.json]",
+        description: "Decrypt a SAVER ciphertext",
+        alias: ["sd"],
+        options: "-verbose|v",
+        action: saverDecrypt
     }
 ];
 
@@ -575,12 +604,12 @@ async function zkeyExportSolidityVerifier(params, options) {
 
     if (await fileExists(path.join(__dirname, "templates"))) {
         templates.groth16 = await fs.promises.readFile(path.join(__dirname, "templates", "verifier_groth16.sol.ejs"), "utf8");
-        templates.plonk = await fs.promises.readFile(path.join(__dirname, "templates", "verifier_plonk.sol.ejs"), "utf8");    
+        templates.plonk = await fs.promises.readFile(path.join(__dirname, "templates", "verifier_plonk.sol.ejs"), "utf8");
     } else {
         templates.groth16 = await fs.promises.readFile(path.join(__dirname, "..", "templates", "verifier_groth16.sol.ejs"), "utf8");
-        templates.plonk = await fs.promises.readFile(path.join(__dirname, "..", "templates", "verifier_plonk.sol.ejs"), "utf8");    
+        templates.plonk = await fs.promises.readFile(path.join(__dirname, "..", "templates", "verifier_plonk.sol.ejs"), "utf8");
     }
-    
+
     const verifierCode = await zkey.exportSolidityVerifier(zkeyName, templates, logger);
 
     fs.writeFileSync(verifierName, verifierCode, "utf-8");
@@ -1094,4 +1123,89 @@ async function plonkVerify(params, options) {
     } else {
         return 1;
     }
+}
+
+// saver keygen [circuit.zkey] [saver_pk.json] [saver_sk.json] [saver_vk.json]
+async function saverKeygen(params, options) {
+    const zkeyName = params[0] || "circuit_final.zkey";
+    const saverPkName = params[1] || "saver_pk.json";
+    const saverSkName = params[2] || "saver_sk.json";
+    const saverVkName = params[3] || "saver_vk.json";
+    const n = parseInt(params[4]) || 1;
+
+    if (options.verbose) Logger.setLogLevel("DEBUG");
+
+    const { pk, sk, vk} = await saver.keygen(zkeyName, n, options.entropy, logger);
+
+    await fs.promises.writeFile(saverPkName, JSON.stringify(stringifyBigInts(pk), null, 1), "utf-8");
+    await fs.promises.writeFile(saverSkName, JSON.stringify(stringifyBigInts(sk), null, 1), "utf-8");
+    await fs.promises.writeFile(saverVkName, JSON.stringify(stringifyBigInts(vk), null, 1), "utf-8");
+
+    return 0;
+}
+
+// saver encrypt [input.json] [circuit.wasm] [circuit.zkey] [saver_pk.json] [proof.json] [public.json] [ciphertext.json]
+async function saverEncrypt(params, options) {
+    const inputName = params[0] || "input.json";
+    const wasmName = params[1] || "circuit.wasm";
+    const zkeyName = params[2] || "circuit_final.zkey";
+    const saverPkName = params[3] || "saver_pk.json";
+    const proofName = params[4] || "proof.json";
+    const publicName = params[5] || "public.json";
+    const ciphertextName = params[6] || "ciphertext.json";
+
+    if (options.verbose) Logger.setLogLevel("DEBUG");
+
+    const input = JSON.parse(await fs.promises.readFile(inputName, "utf8"));
+    const saverPk = JSON.parse(await fs.promises.readFile(saverPkName, "utf8"));
+
+    const { proof, publicSignals, ciphertext } = await saver.encrypt(input, wasmName, zkeyName, saverPk, options.entropy, logger);
+
+    await fs.promises.writeFile(proofName, JSON.stringify(stringifyBigInts(proof), null, 1), "utf-8");
+    await fs.promises.writeFile(publicName, JSON.stringify(stringifyBigInts(publicSignals), null, 1), "utf-8");
+    await fs.promises.writeFile(ciphertextName, JSON.stringify(stringifyBigInts(ciphertext), null, 1), "utf-8");
+
+    return 0;
+}
+
+// saver verify [verification_key.json] [saver_pk.json] [ciphertext.json] [public.json] [proof.json]
+async function saverVerifyEncryption(params, options) {
+    const verificationKeyName = params[0] || "verification_key.json";
+    const saverPkName = params[1] || "saver_pk.json";
+    const ciphertextName = params[2] || "ciphertext.json";
+    const publicName = params[3] || "public.json";
+    const proofName = params[4] || "proof.json";
+
+    const verificationKey = JSON.parse(await fs.promises.readFile(verificationKeyName, "utf8"));
+    const saverPk = JSON.parse(await fs.promises.readFile(saverPkName, "utf8"));
+    const ciphertext = JSON.parse(await fs.promises.readFile(ciphertextName, "utf8"));
+    const pub = JSON.parse(await fs.promises.readFile(publicName, "utf8"));
+    const proof = JSON.parse(await fs.promises.readFile(proofName, "utf8"));
+
+    if (options.verbose) Logger.setLogLevel("DEBUG");
+
+    const isValid = await saver.verify_encryption(verificationKey, saverPk, ciphertext, pub, proof, logger);
+    return isValid ? 0 : 1;
+}
+
+// saver decrypt [saver_sk.json] [saver_vk.json] [ciphertext.json] [plaintext.json] [nu.json]
+async function saverDecrypt(params, options) {
+    const saverSkName = params[0] || "saver_sk.json";
+    const saverVkName = params[1] || "saver_vk.json";
+    const ciphertextName = params[2] || "ciphertext.json";
+    const plaintextName = params[3] || "plaintext.json";
+    const nuName = params[4] || "nu.json";
+
+    const saverSk = JSON.parse(await fs.promises.readFile(saverSkName, "utf8"));
+    const saverVk = JSON.parse(await fs.promises.readFile(saverVkName, "utf8"));
+    const ciphertext = JSON.parse(await fs.promises.readFile(ciphertextName, "utf8"));
+
+    if (options.verbose) Logger.setLogLevel("DEBUG");
+
+    const { m, nu } = await saver.decrypt(saverSk, saverVk, ciphertext);
+
+    await fs.promises.writeFile(plaintextName, JSON.stringify(stringifyBigInts({ m }), null, 1), "utf-8");
+    await fs.promises.writeFile(nuName, JSON.stringify(stringifyBigInts({ nu }), null, 1), "utf-8");
+
+    return 0;
 }

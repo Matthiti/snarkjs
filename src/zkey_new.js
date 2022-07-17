@@ -120,17 +120,23 @@ export default async function newZKey(r1csName, ptauName, zkeyName, logger) {
     curve.G1.toRprLEM(bg1, 0, curve.G1.g);
     const bg2 = new Uint8Array(sG2);
     curve.G2.toRprLEM(bg2, 0, curve.G2.g);
+    const bg1neg = new Uint8Array(sG1);
+    curve.G1.toRprLEM(bg1neg, 0, curve.G1.neg(curve.G1.g));
     const bg1U = new Uint8Array(sG1);
     curve.G1.toRprUncompressed(bg1U, 0, curve.G1.g);
     const bg2U = new Uint8Array(sG2);
     curve.G2.toRprUncompressed(bg2U, 0, curve.G2.g);
+    const bg1negU = new Uint8Array(sG1);
+    curve.G1.toRprUncompressed(bg1negU, 0, curve.G1.neg(curve.G1.g));
 
     await fdZKey.write(bg2);        // gamma2
     await fdZKey.write(bg1);        // delta1
     await fdZKey.write(bg2);        // delta2
+    await fdZKey.write(bg1neg);     // -gamma1
     csHasher.update(bg2U);      // gamma2
     csHasher.update(bg1U);      // delta1
     csHasher.update(bg2U);      // delta2
+    csHasher.update(bg1negU);   // -gamma1
     await endWriteSection(fdZKey);
 
     if (logger) logger.info("Reading r1cs");

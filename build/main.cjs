@@ -7780,9 +7780,46 @@ var plonk = /*#__PURE__*/Object.freeze({
     exportSolidityCallData: plonkExportSolidityCallData
 });
 
+// Add g^{-γ} to the CRS
+async function saverSetup(zkeyNameOld, zkeyNameNew, logger) {
+    const {fd: fdOld, sections: sections} = await binFileUtils__namespace.readBinFile(zkeyNameOld, "zkey", 2);
+    const zkey = await readHeader$1(fdOld, sections);
+    if (zkey.protocol != "groth16") {
+        throw new Error("zkey file is not groth16");
+    }
+
+    console.log(zkey);
+}
+
+async function saverKeygen() {
+
+}
+
+async function saverEncrypt() {
+
+}
+
+async function saverEncryptThenProve() {
+  
+}
+
+async function saverVerify() {
+
+}
+
+var saver = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    setup: saverSetup,
+    keygen: saverKeygen,
+    encrypt: saverEncrypt,
+    encryptThenProve: saverEncryptThenProve,
+    verify: saverVerify
+});
+
 exports.groth16 = groth16;
 exports.plonk = plonk;
 exports.powersOfTau = powersoftau;
 exports.r1cs = r1cs;
+exports.saver = saver;
 exports.wtns = wtns;
 exports.zKey = zkey;

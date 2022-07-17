@@ -35,6 +35,7 @@
 //      beta2
 //      gamma2
 //      delta2
+//      -gamma1
 // IC(3)
 // Coefs(4)
 // PointsA(5)
@@ -83,6 +84,7 @@ export async function writeHeader(fd, zkey) {
     await writeG2(fd, curve, zkey.vk_gamma_2);
     await writeG1(fd, curve, zkey.vk_delta_1);
     await writeG2(fd, curve, zkey.vk_delta_2);
+    await writeG1(fd, curve, zkey.vk_neg_gamma_1);
 
     await binFileUtils.endWriteSection(fd);
 
@@ -216,7 +218,7 @@ export async function readHeader(fd, sections, toObject) {
         return await readHeaderPlonk(fd, sections, toObject);
     } else {
         throw new Error("Protocol not supported: ");
-    }        
+    }
 }
 
 
@@ -248,6 +250,7 @@ async function readHeaderGroth16(fd, sections, toObject) {
     zkey.vk_gamma_2 = await readG2(fd, zkey.curve, toObject);
     zkey.vk_delta_1 = await readG1(fd, zkey.curve, toObject);
     zkey.vk_delta_2 = await readG2(fd, zkey.curve, toObject);
+    zkey.vk_neg_gamma_1 = await readG1(fd, zkey.curve, toObject);
     await binFileUtils.endReadSection(fd);
 
     return zkey;

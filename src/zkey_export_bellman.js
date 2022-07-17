@@ -29,6 +29,7 @@ export default async function phase2exportMPCParams(zkeyName, mpcparamsName, log
     await writeG2(zkey.vk_gamma_2);
     await writeG1(zkey.vk_delta_1);
     await writeG2(zkey.vk_delta_2);
+    await writeG1(zkey.vk_neg_gamma_1);
 
     // IC
     let buffBasesIC;
