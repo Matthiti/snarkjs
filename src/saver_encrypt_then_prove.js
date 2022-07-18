@@ -65,7 +65,7 @@ export default async function saverEncryptThenProve(_input, wasmFile, zkeyFileNa
         Create ciphertext
     */
     const r = Fr.random();
-    const ciphertext = await saverEncrypt(saverPk, encryptedSignals, r, IC.slice(1));
+    const ciphertext = await saverEncrypt(saverPk, encryptedSignals, IC.slice(1), r);
 
     await fdZKey.close();
     await fdWtns.close();

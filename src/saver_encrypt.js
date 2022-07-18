@@ -2,7 +2,7 @@ import * as curves from "./curves.js";
 import {utils} from "ffjavascript";
 const {unstringifyBigInts} = utils;
 
-export default async function saverEncrypt(_saverPk, _plaintexts, r, G_is) {
+export default async function saverEncrypt(_saverPk, _plaintexts, G_is, r) {
     const saverPk = unstringifyBigInts(_saverPk);
     const plaintexts = unstringifyBigInts(_plaintexts);
 

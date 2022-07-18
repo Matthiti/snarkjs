@@ -7867,7 +7867,7 @@ async function readG1$1(fd, curve, toObject) {
 
 const {unstringifyBigInts: unstringifyBigInts$4} = ffjavascript.utils;
 
-async function saverEncrypt(_saverPk, _plaintexts, r, G_is) {
+async function saverEncrypt(_saverPk, _plaintexts, G_is, r) {
     const saverPk = unstringifyBigInts$4(_saverPk);
     const plaintexts = unstringifyBigInts$4(_plaintexts);
 
@@ -7958,7 +7958,7 @@ async function saverEncryptThenProve(_input, wasmFile, zkeyFileName, _saverPk, l
         Create ciphertext
     */
     const r = Fr.random();
-    const ciphertext = await saverEncrypt(saverPk, encryptedSignals, r, IC.slice(1));
+    const ciphertext = await saverEncrypt(saverPk, encryptedSignals, IC.slice(1), r);
 
     await fdZKey.close();
     await fdWtns.close();
