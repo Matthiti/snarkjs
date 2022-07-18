@@ -102,7 +102,7 @@ export default async function saverEncrypt(_input, wasmFile, zkeyFileName, _save
         )
     )));
 
-    return { proof, publicSignals, ciphertext };
+    return { proof, publicSignals: publicSignals.slice(encryptedSignals.length), ciphertext };
 }
 
 // Copied from zkey_utils.js

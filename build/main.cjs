@@ -295,6 +295,7 @@ async function writeHeader(fd, zkey) {
     await writeG2(fd, curve, zkey.vk_gamma_2);
     await writeG1(fd, curve, zkey.vk_delta_1);
     await writeG2(fd, curve, zkey.vk_delta_2);
+    await writeG1(fd, curve, zkey.vk_neg_gamma_1);
 
     await binFileUtils__namespace.endWriteSection(fd);
 
@@ -313,7 +314,7 @@ async function writeG2(fd, curve, p) {
     await fd.write(buff);
 }
 
-async function readG1(fd, curve, toObject) {
+async function readG1$2(fd, curve, toObject) {
     const buff = await fd.read(curve.G1.F.n8*2);
     const res = curve.G1.fromRprLEM(buff, 0);
     return toObject ? curve.G1.toObject(res) : res;
@@ -339,7 +340,7 @@ async function readHeader$1(fd, sections, toObject) {
         return await readHeaderPlonk(fd, sections, toObject);
     } else {
         throw new Error("Protocol not supported: ");
-    }        
+    }
 }
 
 
@@ -365,12 +366,13 @@ async function readHeaderGroth16(fd, sections, toObject) {
     zkey.nPublic = await fd.readULE32();
     zkey.domainSize = await fd.readULE32();
     zkey.power = log2(zkey.domainSize);
-    zkey.vk_alpha_1 = await readG1(fd, zkey.curve, toObject);
-    zkey.vk_beta_1 = await readG1(fd, zkey.curve, toObject);
+    zkey.vk_alpha_1 = await readG1$2(fd, zkey.curve, toObject);
+    zkey.vk_beta_1 = await readG1$2(fd, zkey.curve, toObject);
     zkey.vk_beta_2 = await readG2(fd, zkey.curve, toObject);
     zkey.vk_gamma_2 = await readG2(fd, zkey.curve, toObject);
-    zkey.vk_delta_1 = await readG1(fd, zkey.curve, toObject);
+    zkey.vk_delta_1 = await readG1$2(fd, zkey.curve, toObject);
     zkey.vk_delta_2 = await readG2(fd, zkey.curve, toObject);
+    zkey.vk_neg_gamma_1 = await readG1$2(fd, zkey.curve, toObject);
     await binFileUtils__namespace.endReadSection(fd);
 
     return zkey;
@@ -405,14 +407,14 @@ async function readHeaderPlonk(fd, sections, toObject) {
     zkey.k1 = await fd.read(n8r);
     zkey.k2 = await fd.read(n8r);
 
-    zkey.Qm = await readG1(fd, zkey.curve, toObject);
-    zkey.Ql = await readG1(fd, zkey.curve, toObject);
-    zkey.Qr = await readG1(fd, zkey.curve, toObject);
-    zkey.Qo = await readG1(fd, zkey.curve, toObject);
-    zkey.Qc = await readG1(fd, zkey.curve, toObject);
-    zkey.S1 = await readG1(fd, zkey.curve, toObject);
-    zkey.S2 = await readG1(fd, zkey.curve, toObject);
-    zkey.S3 = await readG1(fd, zkey.curve, toObject);
+    zkey.Qm = await readG1$2(fd, zkey.curve, toObject);
+    zkey.Ql = await readG1$2(fd, zkey.curve, toObject);
+    zkey.Qr = await readG1$2(fd, zkey.curve, toObject);
+    zkey.Qo = await readG1$2(fd, zkey.curve, toObject);
+    zkey.Qc = await readG1$2(fd, zkey.curve, toObject);
+    zkey.S1 = await readG1$2(fd, zkey.curve, toObject);
+    zkey.S2 = await readG1$2(fd, zkey.curve, toObject);
+    zkey.S3 = await readG1$2(fd, zkey.curve, toObject);
     zkey.X_2 = await readG2(fd, zkey.curve, toObject);
 
     await binFileUtils__namespace.endReadSection(fd);
@@ -437,7 +439,7 @@ async function readZKey(fileName, toObject) {
     await binFileUtils__namespace.startReadUniqueSection(fd, sections, 3);
     zkey.IC = [];
     for (let i=0; i<= zkey.nPublic; i++) {
-        const P = await readG1(fd, curve, toObject);
+        const P = await readG1$2(fd, curve, toObject);
         zkey.IC.push(P);
     }
     await binFileUtils__namespace.endReadSection(fd);
@@ -467,7 +469,7 @@ async function readZKey(fileName, toObject) {
     await binFileUtils__namespace.startReadUniqueSection(fd, sections, 5);
     zkey.A = [];
     for (let i=0; i<zkey.nVars; i++) {
-        const A = await readG1(fd, curve, toObject);
+        const A = await readG1$2(fd, curve, toObject);
         zkey.A[i] = A;
     }
     await binFileUtils__namespace.endReadSection(fd);
@@ -478,7 +480,7 @@ async function readZKey(fileName, toObject) {
     await binFileUtils__namespace.startReadUniqueSection(fd, sections, 6);
     zkey.B1 = [];
     for (let i=0; i<zkey.nVars; i++) {
-        const B1 = await readG1(fd, curve, toObject);
+        const B1 = await readG1$2(fd, curve, toObject);
 
         zkey.B1[i] = B1;
     }
@@ -501,7 +503,7 @@ async function readZKey(fileName, toObject) {
     await binFileUtils__namespace.startReadUniqueSection(fd, sections, 8);
     zkey.C = [];
     for (let i=zkey.nPublic+1; i<zkey.nVars; i++) {
-        const C = await readG1(fd, curve, toObject);
+        const C = await readG1$2(fd, curve, toObject);
 
         zkey.C[i] = C;
     }
@@ -513,7 +515,7 @@ async function readZKey(fileName, toObject) {
     await binFileUtils__namespace.startReadUniqueSection(fd, sections, 9);
     zkey.hExps = [];
     for (let i=0; i<zkey.domainSize; i++) {
-        const H = await readG1(fd, curve, toObject);
+        const H = await readG1$2(fd, curve, toObject);
         zkey.hExps.push(H);
     }
     await binFileUtils__namespace.endReadSection(fd);
@@ -532,9 +534,9 @@ async function readZKey(fileName, toObject) {
 
 async function readContribution$1(fd, curve, toObject) {
     const c = {delta:{}};
-    c.deltaAfter = await readG1(fd, curve, toObject);
-    c.delta.g1_s = await readG1(fd, curve, toObject);
-    c.delta.g1_sx = await readG1(fd, curve, toObject);
+    c.deltaAfter = await readG1$2(fd, curve, toObject);
+    c.delta.g1_s = await readG1$2(fd, curve, toObject);
+    c.delta.g1_sx = await readG1$2(fd, curve, toObject);
     c.delta.g2_spx = await readG2(fd, curve, toObject);
     c.transcript = await fd.read(64);
     c.type = await fd.readULE32();
@@ -751,7 +753,7 @@ async function read(fileName) {
     You should have received a copy of the GNU General Public License
     along with snarkJS. If not, see <https://www.gnu.org/licenses/>.
 */
-const {stringifyBigInts: stringifyBigInts$2} = ffjavascript.utils;
+const {stringifyBigInts: stringifyBigInts$3} = ffjavascript.utils;
 
 async function groth16Prove(zkeyFileName, witnessFileName, logger) {
     const {fd: fdWtns, sections: sectionsWtns} = await binFileUtils__namespace.readBinFile(witnessFileName, "wtns", 2, 1<<25, 1<<23);
@@ -865,8 +867,8 @@ async function groth16Prove(zkeyFileName, witnessFileName, logger) {
     await fdZKey.close();
     await fdWtns.close();
 
-    proof = stringifyBigInts$2(proof);
-    publicSignals = stringifyBigInts$2(publicSignals);
+    proof = stringifyBigInts$3(proof);
+    publicSignals = stringifyBigInts$3(publicSignals);
 
     return {proof, publicSignals};
 }
@@ -1119,10 +1121,10 @@ async function joinABC(curve, zkey, a, b, c, logger) {
     You should have received a copy of the GNU General Public License
     along with snarkJS. If not, see <https://www.gnu.org/licenses/>.
 */
-const { unstringifyBigInts: unstringifyBigInts$7} = ffjavascript.utils;
+const { unstringifyBigInts: unstringifyBigInts$a} = ffjavascript.utils;
 
 async function wtnsCalculate(_input, wasmFileName, wtnsFileName, options) {
-    const input = unstringifyBigInts$7(_input);
+    const input = unstringifyBigInts$a(_input);
 
     const fdWasm = await fastFile__namespace.readExisting(wasmFileName);
     const wasm = await fdWasm.read(fdWasm.totalSize);
@@ -1164,10 +1166,10 @@ async function wtnsCalculate(_input, wasmFileName, wtnsFileName, options) {
     You should have received a copy of the GNU General Public License
     along with snarkJS. If not, see <https://www.gnu.org/licenses/>.
 */
-const {unstringifyBigInts: unstringifyBigInts$6} = ffjavascript.utils;
+const {unstringifyBigInts: unstringifyBigInts$9} = ffjavascript.utils;
 
 async function groth16FullProve(_input, wasmFile, zkeyFileName, logger) {
-    const input = unstringifyBigInts$6(_input);
+    const input = unstringifyBigInts$9(_input);
 
     const wtns= {
         type: "mem"
@@ -1194,7 +1196,7 @@ async function groth16FullProve(_input, wasmFile, zkeyFileName, logger) {
     You should have received a copy of the GNU General Public License along with
     snarkjs. If not, see <https://www.gnu.org/licenses/>.
 */
-const {unstringifyBigInts: unstringifyBigInts$5} = ffjavascript.utils;
+const {unstringifyBigInts: unstringifyBigInts$8} = ffjavascript.utils;
 
 async function groth16Verify(_vk_verifier, _publicSignals, _proof, logger) {
 /*
@@ -1204,9 +1206,9 @@ async function groth16Verify(_vk_verifier, _publicSignals, _proof, logger) {
     }
 */
 
-    const vk_verifier = unstringifyBigInts$5(_vk_verifier);
-    const proof = unstringifyBigInts$5(_proof);
-    const publicSignals = unstringifyBigInts$5(_publicSignals);
+    const vk_verifier = unstringifyBigInts$8(_vk_verifier);
+    const proof = unstringifyBigInts$8(_proof);
+    const publicSignals = unstringifyBigInts$8(_publicSignals);
 
     const curve = await getCurveFromName(vk_verifier.curve);
 
@@ -1267,7 +1269,7 @@ async function groth16Verify(_vk_verifier, _publicSignals, _proof, logger) {
     You should have received a copy of the GNU General Public License
     along with snarkJS. If not, see <https://www.gnu.org/licenses/>.
 */
-const { unstringifyBigInts: unstringifyBigInts$4} = ffjavascript.utils;
+const { unstringifyBigInts: unstringifyBigInts$7} = ffjavascript.utils;
 
 function p256$1(n) {
     let nstr = n.toString(16);
@@ -1277,8 +1279,8 @@ function p256$1(n) {
 }
 
 async function groth16ExportSolidityCallData(_proof, _pub) {
-    const proof = unstringifyBigInts$4(_proof);
-    const pub = unstringifyBigInts$4(_pub);
+    const proof = unstringifyBigInts$7(_proof);
+    const pub = unstringifyBigInts$7(_pub);
 
     let inputs = "";
     for (let i=0; i<pub.length; i++) {
@@ -3847,12 +3849,12 @@ async function loadSymbols(symFileName) {
     You should have received a copy of the GNU General Public License
     along with snarkJS. If not, see <https://www.gnu.org/licenses/>.
 */
-const {unstringifyBigInts: unstringifyBigInts$3} = ffjavascript.utils;
+const {unstringifyBigInts: unstringifyBigInts$6} = ffjavascript.utils;
 
 
 async function wtnsDebug(_input, wasmFileName, wtnsFileName, symName, options, logger) {
 
-    const input = unstringifyBigInts$3(_input);
+    const input = unstringifyBigInts$6(_input);
 
     const fdWasm = await fastFile__namespace.readExisting(wasmFileName);
     const wasm = await fdWasm.read(fdWasm.totalSize);
@@ -4155,17 +4157,23 @@ async function newZKey(r1csName, ptauName, zkeyName, logger) {
     curve.G1.toRprLEM(bg1, 0, curve.G1.g);
     const bg2 = new Uint8Array(sG2);
     curve.G2.toRprLEM(bg2, 0, curve.G2.g);
+    const bg1neg = new Uint8Array(sG1);
+    curve.G1.toRprLEM(bg1neg, 0, curve.G1.neg(curve.G1.g));
     const bg1U = new Uint8Array(sG1);
     curve.G1.toRprUncompressed(bg1U, 0, curve.G1.g);
     const bg2U = new Uint8Array(sG2);
     curve.G2.toRprUncompressed(bg2U, 0, curve.G2.g);
+    const bg1negU = new Uint8Array(sG1);
+    curve.G1.toRprUncompressed(bg1negU, 0, curve.G1.neg(curve.G1.g));
 
     await fdZKey.write(bg2);        // gamma2
     await fdZKey.write(bg1);        // delta1
     await fdZKey.write(bg2);        // delta2
+    await fdZKey.write(bg1neg);     // -gamma1
     csHasher.update(bg2U);      // gamma2
     csHasher.update(bg1U);      // delta1
     csHasher.update(bg2U);      // delta2
+    csHasher.update(bg1negU);   // -gamma1
     await binFileUtils.endWriteSection(fdZKey);
 
     if (logger) logger.info("Reading r1cs");
@@ -4646,6 +4654,7 @@ async function phase2exportMPCParams(zkeyName, mpcparamsName, logger) {
     await writeG2(zkey.vk_gamma_2);
     await writeG1(zkey.vk_delta_1);
     await writeG2(zkey.vk_delta_2);
+    await writeG1(zkey.vk_neg_gamma_1);
 
     // IC
     let buffBasesIC;
@@ -5839,7 +5848,7 @@ async function bellmanContribute(curve, challengeFilename, responesFileName, ent
     You should have received a copy of the GNU General Public License
     along with snarkJS. If not, see <https://www.gnu.org/licenses/>.
 */
-const {stringifyBigInts: stringifyBigInts$1} = ffjavascript.utils;
+const {stringifyBigInts: stringifyBigInts$2} = ffjavascript.utils;
 
 async function zkeyExportVerificationKey(zkeyName, /* logger */ ) {
 
@@ -5892,7 +5901,7 @@ async function groth16Vk(zkey, fd, sections) {
     }
     await binFileUtils__namespace.endReadSection(fd);
 
-    vKey = stringifyBigInts$1(vKey);
+    vKey = stringifyBigInts$2(vKey);
 
     return vKey;
 }
@@ -5924,7 +5933,7 @@ async function plonkVk(zkey) {
         w: curve.Fr.toObject(curve.Fr.w[zkey.power])
     };
 
-    vKey = stringifyBigInts$1(vKey);
+    vKey = stringifyBigInts$2(vKey);
 
     return vKey;
 }
@@ -6425,7 +6434,7 @@ async function plonkSetup(r1csName, ptauName, zkeyName, logger) {
     You should have received a copy of the GNU General Public License along with
     snarkjs. If not, see <https://www.gnu.org/licenses/>.
 */
-const {stringifyBigInts} = ffjavascript.utils;
+const {stringifyBigInts: stringifyBigInts$1} = ffjavascript.utils;
 const { keccak256: keccak256$1 } = jsSha3__default["default"];
 
 async function plonk16Prove(zkeyFileName, witnessFileName, logger) {
@@ -6533,8 +6542,8 @@ async function plonk16Prove(zkeyFileName, witnessFileName, logger) {
 
     delete proof.eval_t;
 
-    proof = stringifyBigInts(proof);
-    publicSignals = stringifyBigInts(publicSignals);
+    proof = stringifyBigInts$1(proof);
+    publicSignals = stringifyBigInts$1(publicSignals);
 
     return {proof, publicSignals};
 
@@ -7271,10 +7280,10 @@ async function plonk16Prove(zkeyFileName, witnessFileName, logger) {
     You should have received a copy of the GNU General Public License
     along with snarkJS. If not, see <https://www.gnu.org/licenses/>.
 */
-const {unstringifyBigInts: unstringifyBigInts$2} = ffjavascript.utils;
+const {unstringifyBigInts: unstringifyBigInts$5} = ffjavascript.utils;
 
 async function plonkFullProve(_input, wasmFile, zkeyFileName, logger) {
-    const input = unstringifyBigInts$2(_input);
+    const input = unstringifyBigInts$5(_input);
 
     const wtns= {
         type: "mem"
@@ -7301,14 +7310,14 @@ async function plonkFullProve(_input, wasmFile, zkeyFileName, logger) {
     You should have received a copy of the GNU General Public License along with
     snarkjs. If not, see <https://www.gnu.org/licenses/>.
 */
-const {unstringifyBigInts: unstringifyBigInts$1} = ffjavascript.utils;
+const {unstringifyBigInts: unstringifyBigInts$4} = ffjavascript.utils;
 const { keccak256 } = jsSha3__default["default"];
 
 
 async function plonkVerify(_vk_verifier, _publicSignals, _proof, logger) {
-    let vk_verifier = unstringifyBigInts$1(_vk_verifier);
-    let proof = unstringifyBigInts$1(_proof);
-    let publicSignals = unstringifyBigInts$1(_publicSignals);
+    let vk_verifier = unstringifyBigInts$4(_vk_verifier);
+    let proof = unstringifyBigInts$4(_proof);
+    let publicSignals = unstringifyBigInts$4(_publicSignals);
 
     const curve = await getCurveFromName(vk_verifier.curve);
 
@@ -7702,7 +7711,7 @@ async function isValidPairing(curve, proof, challanges, vk, E, F) {
     You should have received a copy of the GNU General Public License
     along with snarkJS. If not, see <https://www.gnu.org/licenses/>.
 */
-const { unstringifyBigInts} = ffjavascript.utils;
+const { unstringifyBigInts: unstringifyBigInts$3} = ffjavascript.utils;
 
 function i2hex(i) {
     return ("0" + i.toString(16)).slice(-2);
@@ -7716,8 +7725,8 @@ function p256(n) {
 }
 
 async function plonkExportSolidityCallData(_proof, _pub) {
-    const proof = unstringifyBigInts(_proof);
-    const pub = unstringifyBigInts(_pub);
+    const proof = unstringifyBigInts$3(_proof);
+    const pub = unstringifyBigInts$3(_pub);
 
     const curve = await getCurveFromName(proof.curve);
     const G1 = curve.G1;
@@ -7782,40 +7791,289 @@ var plonk = /*#__PURE__*/Object.freeze({
     exportSolidityCallData: plonkExportSolidityCallData
 });
 
-// Add g^{-γ} to the CRS
-async function saverSetup(zkeyNameOld, zkeyNameNew, logger) {
-    const {fd: fdOld, sections: sections} = await binFileUtils__namespace.readBinFile(zkeyNameOld, "zkey", 2);
-    const zkey = await readHeader$1(fdOld, sections);
+async function saverKeygen(zkeyName, n, entropy, logger) {
+    const { fd, sections } = await binFileUtils__namespace.readBinFile(zkeyName, "zkey", 2);
+    const zkey = await readHeader$1(fd, sections);
     if (zkey.protocol != "groth16") {
         throw new Error("zkey file is not groth16");
     }
 
-    console.log(zkey);
+    const curve = await getCurveFromQ(zkey.q);
+    const Fr = curve.Fr;
+    const G1 = curve.G1;
+    const G2 = curve.G2;
+
+    await binFileUtils__namespace.startReadUniqueSection(fd, sections, 3);
+    const IC = [];
+    for (let i = 0; i <= zkey.nPublic; i++) {
+        const P = await readG1$1(fd, curve, false);
+        IC.push(P);
+    }
+    await binFileUtils__namespace.endReadSection(fd);
+
+    if (logger) logger.info("Generating randomness");
+    const rng = await getRandomRng(entropy);
+    const s = [...Array(n)].map(() => Fr.fromRng(rng));
+    const v = [...Array(n)].map(() => Fr.fromRng(rng));
+    const t_0 = Fr.fromRng(rng);
+    const t = [...Array(n)].map(() => Fr.fromRng(rng));
+    const rho = Fr.fromRng(rng);
+
+    if (logger) logger.info("Constructing key");
+
+    const pk = {
+        X_0: G1.toObject(zkey.vk_delta_1),
+        X:   s.map(s_i => G1.toObject(G1.toAffine(G1.timesFr(zkey.vk_delta_1, s_i)))),
+        Y:   t.map((t_i, i) => G1.toObject(G1.toAffine(G1.timesFr(IC[i + 1], t_i)))),
+        Z:   [t_0, ...t].map(t_i => G2.toObject(G2.toAffine(G2.timesFr(G2.g, t_i)))),
+        P_1: G1.toObject(G1.toAffine(G1.timesFr(
+            zkey.vk_delta_1,
+            Fr.add(
+                t_0,
+                t.map((t_i, i) => Fr.mul(t_i, s[i]))
+                    .reduce((acc, cur) => Fr.add(acc, cur))
+            )
+        ))),
+        P_2: G1.toObject(G1.toAffine(G1.timesFr(
+            zkey.vk_neg_gamma_1,
+            s.reduce((acc, cur) => Fr.add(acc, cur), Fr.one)
+        ))),
+        curve: curve.name
+    };
+
+    const sk = {
+        rho: Fr.toObject(rho),
+        curve: curve.name
+    };
+
+    const vk = {
+        V_0:  G2.toObject(G2.toAffine(G2.timesFr(G2.g, rho))),
+        V_n:  s.map((s_i, i) => G2.toObject(G2.toAffine(G2.timesFr(G2.g, Fr.mul(s_i, v[i]))))),
+        V_2n: v.map(v_i => G2.toObject(G2.toAffine(G2.timesFr(G2.g, Fr.mul(rho, v_i))))),
+        curve: curve.name
+    };
+
+    await fd.close();
+
+    return { pk, sk, vk };
 }
 
-async function saverKeygen() {
+// Copied from zkey_utils.js
+async function readG1$1(fd, curve, toObject) {
+    const buff = await fd.read(curve.G1.F.n8*2);
+    const res = curve.G1.fromRprLEM(buff, 0);
+    return toObject ? curve.G1.toObject(res) : res;
+}
+
+const {stringifyBigInts, unstringifyBigInts: unstringifyBigInts$2} = ffjavascript.utils;
+
+// Encrypts the first n public inputs
+async function saverEncrypt(_input, wasmFile, zkeyFileName, _saverPk, entropy, logger) {
+    const { fd: fdZKey, sections: sectionsZKey } = await binFileUtils__namespace.readBinFile(zkeyFileName, "zkey", 2);
+    const zkey = await readHeader$1(fdZKey, sectionsZKey);
+    if (zkey.protocol != "groth16") {
+        throw new Error("zkey file is not groth16");
+    }
+
+    const curve = await getCurveFromQ(zkey.q);
+    const Fr = curve.Fr;
+    const G1 = curve.G1;
+
+    await binFileUtils__namespace.startReadUniqueSection(fdZKey, sectionsZKey, 3);
+    const IC = [];
+    for (let i = 0; i <= zkey.nPublic; i++) {
+        const P = await readG1(fdZKey, curve, false);
+        IC.push(P);
+    }
+    await binFileUtils__namespace.endReadSection(fdZKey);
+
+    /*
+        Start witness calculation
+    */
+    const input = unstringifyBigInts$2(_input);
+    const wtnsObject = {
+        type: "mem"
+    };
+    await wtnsCalculate(input, wasmFile, wtnsObject);
+
+    const { fd: fdWtns, sections: sectionsWtns } = await binFileUtils__namespace.readBinFile(wtnsObject, "wtns", 2, 1<<25, 1<<23);
+    const wtns = await readHeader(fdWtns, sectionsWtns);
+
+    if (!ffjavascript.Scalar.eq(zkey.r,  wtns.q)) {
+        throw new Error("Curve of the witness does not match the curve of the proving key");
+    }
+
+    if (wtns.nWitness != zkey.nVars) {
+        throw new Error(`Invalid witness length. Circuit: ${zkey.nVars}, witness: ${wtns.nWitness}`);
+    }
+
+    if (logger) logger.debug("Reading Wtns");
+    const buffWitness = await binFileUtils__namespace.readSection(fdWtns, sectionsWtns, 2);
+
+    const saverPk = unstringifyBigInts$2(_saverPk);
+
+    // TODO: for now, we encrypt the first n public inputs (including public outputs first)
+    const encryptedSignals = [];
+    for (let i = 1; i <= saverPk.X.length; i++) {
+        const b = buffWitness.slice(i*Fr.n8, i*Fr.n8+Fr.n8);
+        encryptedSignals.push(ffjavascript.Scalar.fromRprLE(b));
+    }
+
+    /*
+        Create ciphertext
+    */
+    if (logger) logger.info("Generating randomness");
+    const rng = await getRandomRng(entropy);
+
+    const r = Fr.fromRng(rng);
+    const ciphertext = {
+        c_0: G1.toObject(G1.toAffine(
+            G1.timesFr(G1.fromObject(saverPk.X_0), r)
+        )),
+        c: encryptedSignals.map((s, i) =>
+            G1.toObject(G1.toAffine(
+                G1.add(
+                    G1.timesFr(G1.fromObject(saverPk.X[i]), r),
+                    G1.timesScalar(IC[i + 1], s)
+                )
+            ))
+        ),
+        psi: G1.toObject(G1.toAffine(
+            G1.add(
+                G1.timesFr(G1.fromObject(saverPk.P_1), r),
+                saverPk.Y.map((Y_i, i) => G1.timesScalar(G1.fromObject(Y_i), encryptedSignals[i]))
+                    .reduce((acc, cur) => G1.add(acc, cur))
+            )
+        ))
+    };
+
+    await fdZKey.close();
+    await fdWtns.close();
+
+    const { proof, publicSignals } = await groth16Prove(zkeyFileName, wtnsObject, logger);
+    proof.pi_c = stringifyBigInts(G1.toObject(G1.toAffine(
+        G1.add(
+            G1.fromObject(unstringifyBigInts$2(proof.pi_c)),
+            G1.timesFr(
+                G1.fromObject(saverPk.P_2),
+                r
+            )
+        )
+    )));
+
+    return { proof, publicSignals: publicSignals.slice(encryptedSignals.length), ciphertext };
+}
+
+// Copied from zkey_utils.js
+async function readG1(fd, curve, toObject) {
+    const buff = await fd.read(curve.G1.F.n8*2);
+    const res = curve.G1.fromRprLEM(buff, 0);
+    return toObject ? curve.G1.toObject(res) : res;
+}
+
+const {unstringifyBigInts: unstringifyBigInts$1} = ffjavascript.utils;
+
+async function saverVerifyEncryption(_vk_verifier, _saverPk, _ciphertext, _publicSignals, _proof, logger ) {
+    const vk_verifier = unstringifyBigInts$1(_vk_verifier);
+    const saverPk = unstringifyBigInts$1(_saverPk);
+    const ciphertext = unstringifyBigInts$1(_ciphertext);
+    const publicSignals = unstringifyBigInts$1(_publicSignals);
+    const proof = unstringifyBigInts$1(_proof);
+
+    const curve = await getCurveFromName(vk_verifier.curve);
+
+    const ct_c_0 = curve.G1.fromObject(ciphertext.c_0);
+    const ct_c = ciphertext.c.map(c_i => curve.G1.fromObject(c_i));
+    const ct_psi = curve.G1.fromObject(ciphertext.psi);
+    const Z = saverPk.Z.map(Z_i => curve.G2.fromObject(Z_i));
+
+    const validEncryption = await curve.pairingEq(
+        ...Z.flatMap((Z_i, i) => [[ct_c_0, ...ct_c][i], Z_i]),
+        curve.G1.neg(ct_psi), curve.G2.g
+    );
+
+    if (!validEncryption) {
+        if (logger) logger.error("Invalid ciphertext");
+        return false;
+    }
+
+    if (logger) logger.info("Valid ciphertext");
+
+    const IC0 = curve.G1.fromObject(vk_verifier.IC[0]);
+    const IC = new Uint8Array(curve.G1.F.n8*2 * publicSignals.length);
+    const w = new Uint8Array(curve.Fr.n8 * publicSignals.length);
+
+    for (let i = 0; i < publicSignals.length; i++) {
+        const buffP = curve.G1.fromObject(vk_verifier.IC[i + ciphertext.c.length + 1]);
+        IC.set(buffP, i * curve.G1.F.n8*2);
+        ffjavascript.Scalar.toRprLE(w, curve.Fr.n8 * i, publicSignals[i], curve.Fr.n8);
+    }
+
+    let cpub = await curve.G1.multiExpAffine(IC, w);
+    cpub = curve.G1.add(cpub, IC0);
+
+    // Add ciphertext
+    cpub = curve.G1.add(cpub,
+        ct_c.reduce((acc, cur) => curve.G1.add(acc, cur), ct_c_0)
+    );
+
+    const pi_a = curve.G1.fromObject(proof.pi_a);
+    const pi_b = curve.G2.fromObject(proof.pi_b);
+    const pi_c = curve.G1.fromObject(proof.pi_c);
+
+    const vk_gamma_2 = curve.G2.fromObject(vk_verifier.vk_gamma_2);
+    const vk_delta_2 = curve.G2.fromObject(vk_verifier.vk_delta_2);
+    const vk_alpha_1 = curve.G1.fromObject(vk_verifier.vk_alpha_1);
+    const vk_beta_2 = curve.G2.fromObject(vk_verifier.vk_beta_2);
+
+    const res = await curve.pairingEq(
+        curve.G1.neg(pi_a) , pi_b,
+        cpub , vk_gamma_2,
+        pi_c , vk_delta_2,
+
+        vk_alpha_1, vk_beta_2
+    );
+
+    if (! res) {
+        if (logger) logger.error("Invalid proof");
+        return false;
+    }
+
+    if (logger) logger.info("OK!");
+    return true;
 
 }
 
-async function saverEncrypt() {
+const {unstringifyBigInts} = ffjavascript.utils;
 
-}
+async function saverDecrypt(_saverSk, _saverVk, _ciphertext) {
+    const saverSk = unstringifyBigInts(_saverSk);
+    const saverVk = unstringifyBigInts(_saverVk);
+    const ciphertext = unstringifyBigInts(_ciphertext);
 
-async function saverEncryptThenProve() {
-  
-}
+    const curve = await getCurveFromName(saverSk.curve);
 
-async function saverVerify() {
+    const ct_c_0 = curve.G1.fromObject(ciphertext.c_0);
+    const ct_c = ciphertext.c.map(c_i => curve.G1.fromObject(c_i));
+    const vk_V_n = saverVk.V_n.map(V_i => curve.G2.fromObject(V_i));
+    const vk_V_2n = saverVk.V_2n.map(V_2i => curve.G2.fromObject(V_2i));
+    const rho = curve.Fr.fromObject(saverSk.rho);
 
+    const m = await Promise.all(ct_c.map(async (c_i, i) => curve.Gt.toObject(curve.Gt.sub(
+        await curve.pairing(c_i, vk_V_2n[i]),
+        await curve.pairing(curve.G1.timesFr(ct_c_0, rho), vk_V_n[i])
+    ))));
+
+    const nu = curve.G1.toObject(curve.G1.timesFr(ct_c_0, rho));
+    return { m, nu };
 }
 
 var saver = /*#__PURE__*/Object.freeze({
     __proto__: null,
-    setup: saverSetup,
     keygen: saverKeygen,
     encrypt: saverEncrypt,
-    encryptThenProve: saverEncryptThenProve,
-    verify: saverVerify
+    verify_encryption: saverVerifyEncryption,
+    decrypt: saverDecrypt
 });
 
 exports.groth16 = groth16;

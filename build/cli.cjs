@@ -8069,7 +8069,7 @@ async function saverEncrypt$1(_input, wasmFile, zkeyFileName, _saverPk, entropy,
         )
     )));
 
-    return { proof, publicSignals, ciphertext };
+    return { proof, publicSignals: publicSignals.slice(encryptedSignals.length), ciphertext };
 }
 
 // Copied from zkey_utils.js
@@ -8108,13 +8108,13 @@ async function saverVerifyEncryption$1(_vk_verifier, _saverPk, _ciphertext, _pub
     if (logger) logger.info("Valid ciphertext");
 
     const IC0 = curve.G1.fromObject(vk_verifier.IC[0]);
-    const IC = new Uint8Array(curve.G1.F.n8*2 * (publicSignals.length - ciphertext.c.length));
-    const w = new Uint8Array(curve.Fr.n8 * (publicSignals.length - ciphertext.c.length));
+    const IC = new Uint8Array(curve.G1.F.n8*2 * publicSignals.length);
+    const w = new Uint8Array(curve.Fr.n8 * publicSignals.length);
 
-    for (let i = ciphertext.c.length; i < publicSignals.length; i++) {
-        const buffP = curve.G1.fromObject(vk_verifier.IC[i + 1]);
-        IC.set(buffP, (i - ciphertext.c.length) * curve.G1.F.n8*2);
-        ffjavascript.Scalar.toRprLE(w, curve.Fr.n8 * (i - ciphertext.c.length), publicSignals[i], curve.Fr.n8);
+    for (let i = 0; i < publicSignals.length; i++) {
+        const buffP = curve.G1.fromObject(vk_verifier.IC[i + ciphertext.c.length + 1]);
+        IC.set(buffP, i * curve.G1.F.n8*2);
+        ffjavascript.Scalar.toRprLE(w, curve.Fr.n8 * i, publicSignals[i], curve.Fr.n8);
     }
 
     let cpub = await curve.G1.multiExpAffine(IC, w);

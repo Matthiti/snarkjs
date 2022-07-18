@@ -14,7 +14,8 @@
     "build": "rollup -c config/rollup.cjs.config.js",
     "buildcli": "rollup -c config/rollup.cli.config.js",
     "buildiife": "BROWSER=true rollup -c config/rollup.iife.config.js",
-    "buildiifemin": "BROWSER=true rollup -c config/rollup.iife_min.config.js"
+    "buildiifemin": "BROWSER=true rollup -c config/rollup.iife_min.config.js",
+    "buildall": "npm run build && npm run buildcli && npm run buildiife && npm run buildiifemin"
   },
   "bin": {
     "snarkjs": "build/cli.cjs"
