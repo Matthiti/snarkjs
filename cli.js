@@ -1184,7 +1184,7 @@ async function saverVerifyEncryptionAndProof(params, options) {
 
     if (options.verbose) Logger.setLogLevel("DEBUG");
 
-    const isValid = await saver.verify_encryption_and_proof(verificationKey, saverPk, ciphertext, pub, proof, logger);
+    const isValid = await saver.verifyEncryptionAndProof(verificationKey, saverPk, ciphertext, pub, proof, logger);
     return isValid ? 0 : 1;
 }
 

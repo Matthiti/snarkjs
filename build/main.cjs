@@ -8105,7 +8105,8 @@ var saver = /*#__PURE__*/Object.freeze({
     keygen: saverKeygen,
     encrypt: saverEncrypt,
     encryptThenProve: saverEncryptThenProve,
-    verify_encryption_and_proof: saverVerifyEncryptionAndProof,
+    verifyEncryption: saverVerifyEncryption,
+    verifyEncryptionAndProof: saverVerifyEncryptionAndProof,
     decrypt: saverDecrypt
 });
 
