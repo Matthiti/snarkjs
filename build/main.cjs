@@ -7867,32 +7867,16 @@ async function readG1$1(fd, curve, toObject) {
 
 const {unstringifyBigInts: unstringifyBigInts$4} = ffjavascript.utils;
 
-async function saverEncrypt(zkeyFileName, _saverPk, _plaintexts, r) {
-    const { fd: fdZKey, sections: sectionsZKey } = await binFileUtils__namespace.readBinFile(zkeyFileName, "zkey", 2);
-    const zkey = await readHeader$1(fdZKey, sectionsZKey);
-    if (zkey.protocol != "groth16") {
-        throw new Error("zkey file is not groth16");
-    }
-
-    const curve = await getCurveFromQ(zkey.q);
-    const G1 = curve.G1;
-
-    await binFileUtils__namespace.startReadUniqueSection(fdZKey, sectionsZKey, 3);
-    const IC = [];
-    for (let i = 0; i <= zkey.nPublic; i++) {
-        const P = await readG1(fdZKey, curve, false);
-        IC.push(P);
-    }
-    await binFileUtils__namespace.endReadSection(fdZKey);
-
-    fdZKey.close();
-
+async function saverEncrypt(_saverPk, _plaintexts, G_is, r) {
     const saverPk = unstringifyBigInts$4(_saverPk);
     const plaintexts = unstringifyBigInts$4(_plaintexts);
 
     if (saverPk.X.length !== plaintexts.length) {
         throw new Error("Plaintexts length doesn't correspond to public key");
     }
+
+    const curve = await getCurveFromName(saverPk.curve);
+    const G1 = curve.G1;
 
     return {
         c_0: G1.toObject(G1.toAffine(
@@ -7902,7 +7886,7 @@ async function saverEncrypt(zkeyFileName, _saverPk, _plaintexts, r) {
             G1.toObject(G1.toAffine(
                 G1.add(
                     G1.timesFr(G1.fromObject(saverPk.X[i]), r),
-                    G1.timesScalar(IC[i + 1], s)
+                    G1.timesScalar(G_is[i], s)
                 )
             ))
         ),
@@ -7914,13 +7898,6 @@ async function saverEncrypt(zkeyFileName, _saverPk, _plaintexts, r) {
             )
         ))
     };
-}
-
-// Copied from zkey_utils.js
-async function readG1(fd, curve, toObject) {
-    const buff = await fd.read(curve.G1.F.n8*2);
-    const res = curve.G1.fromRprLEM(buff, 0);
-    return toObject ? curve.G1.toObject(res) : res;
 }
 
 const {stringifyBigInts, unstringifyBigInts: unstringifyBigInts$3} = ffjavascript.utils;
@@ -7936,6 +7913,14 @@ async function saverEncryptThenProve(_input, wasmFile, zkeyFileName, _saverPk, l
     const curve = await getCurveFromQ(zkey.q);
     const Fr = curve.Fr;
     const G1 = curve.G1;
+
+    await binFileUtils__namespace.startReadUniqueSection(fdZKey, sectionsZKey, 3);
+    const IC = [];
+    for (let i = 0; i <= zkey.nPublic; i++) {
+        const P = await readG1(fdZKey, curve, false);
+        IC.push(P);
+    }
+    await binFileUtils__namespace.endReadSection(fdZKey);
 
     /*
         Start witness calculation
@@ -7973,7 +7958,7 @@ async function saverEncryptThenProve(_input, wasmFile, zkeyFileName, _saverPk, l
         Create ciphertext
     */
     const r = Fr.random();
-    const ciphertext = await saverEncrypt(zkeyFileName, saverPk, encryptedSignals, r);
+    const ciphertext = await saverEncrypt(saverPk, encryptedSignals, IC.slice(1), r);
 
     await fdZKey.close();
     await fdWtns.close();
@@ -7990,6 +7975,13 @@ async function saverEncryptThenProve(_input, wasmFile, zkeyFileName, _saverPk, l
     )));
 
     return { proof, publicSignals: publicSignals.slice(encryptedSignals.length), ciphertext };
+}
+
+// Copied from zkey_utils.js
+async function readG1(fd, curve, toObject) {
+    const buff = await fd.read(curve.G1.F.n8*2);
+    const res = curve.G1.fromRprLEM(buff, 0);
+    return toObject ? curve.G1.toObject(res) : res;
 }
 
 const {unstringifyBigInts: unstringifyBigInts$2} = ffjavascript.utils;
