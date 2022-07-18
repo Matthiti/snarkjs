@@ -306,18 +306,18 @@ const commands = [
         action: saverKeygen
     },
     {
-        cmd: "saver encrypt [input.json] [circuit.wasm] [circuit.zkey] [saver_pk.json] [proof.json] [public.json] [ciphertext.json]",
+        cmd: "saver encrypt-then-prove [input.json] [circuit.wasm] [circuit.zkey] [saver_pk.json] [proof.json] [public.json] [ciphertext.json]",
         description: "Encrypt and prove using SAVER",
         alias: ["se"],
         options: "-verbose|v -entropy|e",
-        action: saverEncrypt
+        action: saverEncryptThenProve
     },
     {
-        cmd: "saver verify [verification_key.json] [saver_pk.json] [ciphertext.json] [public.json] [proof.json]",
+        cmd: "saver verify encryption-and-proof [verification_key.json] [saver_pk.json] [ciphertext.json] [public.json] [proof.json]",
         description: "Verify a SAVER encryption and the corresponding proof",
         alias: ["sv"],
         options: "-verbose|v",
-        action: saverVerifyEncryption
+        action: saverVerifyEncryptionAndProof
     },
     {
         cmd: "saver decrypt [saver_sk.json] [saver_vk.json] [ciphertext.json] [plaintext.json] [nu.json]",
@@ -1144,8 +1144,8 @@ async function saverKeygen(params, options) {
     return 0;
 }
 
-// saver encrypt [input.json] [circuit.wasm] [circuit.zkey] [saver_pk.json] [proof.json] [public.json] [ciphertext.json]
-async function saverEncrypt(params, options) {
+// saver encrypt-then-prove [input.json] [circuit.wasm] [circuit.zkey] [saver_pk.json] [proof.json] [public.json] [ciphertext.json]
+async function saverEncryptThenProve(params, options) {
     const inputName = params[0] || "input.json";
     const wasmName = params[1] || "circuit.wasm";
     const zkeyName = params[2] || "circuit_final.zkey";
@@ -1159,7 +1159,7 @@ async function saverEncrypt(params, options) {
     const input = JSON.parse(await fs.promises.readFile(inputName, "utf8"));
     const saverPk = JSON.parse(await fs.promises.readFile(saverPkName, "utf8"));
 
-    const { proof, publicSignals, ciphertext } = await saver.encrypt(input, wasmName, zkeyName, saverPk, logger);
+    const { proof, publicSignals, ciphertext } = await saver.encryptThenProve(input, wasmName, zkeyName, saverPk, logger);
 
     await fs.promises.writeFile(proofName, JSON.stringify(stringifyBigInts(proof), null, 1), "utf-8");
     await fs.promises.writeFile(publicName, JSON.stringify(stringifyBigInts(publicSignals), null, 1), "utf-8");
@@ -1168,8 +1168,8 @@ async function saverEncrypt(params, options) {
     return 0;
 }
 
-// saver verify [verification_key.json] [saver_pk.json] [ciphertext.json] [public.json] [proof.json]
-async function saverVerifyEncryption(params, options) {
+// saver verify encryption-and-proof [verification_key.json] [saver_pk.json] [ciphertext.json] [public.json] [proof.json]
+async function saverVerifyEncryptionAndProof(params, options) {
     const verificationKeyName = params[0] || "verification_key.json";
     const saverPkName = params[1] || "saver_pk.json";
     const ciphertextName = params[2] || "ciphertext.json";
@@ -1184,7 +1184,7 @@ async function saverVerifyEncryption(params, options) {
 
     if (options.verbose) Logger.setLogLevel("DEBUG");
 
-    const isValid = await saver.verify_encryption(verificationKey, saverPk, ciphertext, pub, proof, logger);
+    const isValid = await saver.verify_encryption_and_proof(verificationKey, saverPk, ciphertext, pub, proof, logger);
     return isValid ? 0 : 1;
 }
 

@@ -5851,10 +5851,10 @@ async function joinABC(curve, zkey, a, b, c, logger) {
     You should have received a copy of the GNU General Public License
     along with snarkJS. If not, see <https://www.gnu.org/licenses/>.
 */
-const { unstringifyBigInts: unstringifyBigInts$a} = ffjavascript.utils;
+const { unstringifyBigInts: unstringifyBigInts$c} = ffjavascript.utils;
 
 async function wtnsCalculate$1(_input, wasmFileName, wtnsFileName, options) {
-    const input = unstringifyBigInts$a(_input);
+    const input = unstringifyBigInts$c(_input);
 
     const fdWasm = await fastFile__namespace.readExisting(wasmFileName);
     const wasm = await fdWasm.read(fdWasm.totalSize);
@@ -5896,10 +5896,10 @@ async function wtnsCalculate$1(_input, wasmFileName, wtnsFileName, options) {
     You should have received a copy of the GNU General Public License
     along with snarkJS. If not, see <https://www.gnu.org/licenses/>.
 */
-const {unstringifyBigInts: unstringifyBigInts$9} = ffjavascript.utils;
+const {unstringifyBigInts: unstringifyBigInts$b} = ffjavascript.utils;
 
 async function groth16FullProve$1(_input, wasmFile, zkeyFileName, logger) {
-    const input = unstringifyBigInts$9(_input);
+    const input = unstringifyBigInts$b(_input);
 
     const wtns= {
         type: "mem"
@@ -5926,7 +5926,7 @@ async function groth16FullProve$1(_input, wasmFile, zkeyFileName, logger) {
     You should have received a copy of the GNU General Public License along with
     snarkjs. If not, see <https://www.gnu.org/licenses/>.
 */
-const {unstringifyBigInts: unstringifyBigInts$8} = ffjavascript.utils;
+const {unstringifyBigInts: unstringifyBigInts$a} = ffjavascript.utils;
 
 async function groth16Verify$1(_vk_verifier, _publicSignals, _proof, logger) {
 /*
@@ -5936,9 +5936,9 @@ async function groth16Verify$1(_vk_verifier, _publicSignals, _proof, logger) {
     }
 */
 
-    const vk_verifier = unstringifyBigInts$8(_vk_verifier);
-    const proof = unstringifyBigInts$8(_proof);
-    const publicSignals = unstringifyBigInts$8(_publicSignals);
+    const vk_verifier = unstringifyBigInts$a(_vk_verifier);
+    const proof = unstringifyBigInts$a(_proof);
+    const publicSignals = unstringifyBigInts$a(_publicSignals);
 
     const curve = await getCurveFromName(vk_verifier.curve);
 
@@ -5999,7 +5999,7 @@ async function groth16Verify$1(_vk_verifier, _publicSignals, _proof, logger) {
     You should have received a copy of the GNU General Public License
     along with snarkJS. If not, see <https://www.gnu.org/licenses/>.
 */
-const { unstringifyBigInts: unstringifyBigInts$7} = ffjavascript.utils;
+const { unstringifyBigInts: unstringifyBigInts$9} = ffjavascript.utils;
 
 function p256$1(n) {
     let nstr = n.toString(16);
@@ -6009,8 +6009,8 @@ function p256$1(n) {
 }
 
 async function groth16ExportSolidityCallData(_proof, _pub) {
-    const proof = unstringifyBigInts$7(_proof);
-    const pub = unstringifyBigInts$7(_pub);
+    const proof = unstringifyBigInts$9(_proof);
+    const pub = unstringifyBigInts$9(_pub);
 
     let inputs = "";
     for (let i=0; i<pub.length; i++) {
@@ -7321,10 +7321,10 @@ async function plonk16Prove(zkeyFileName, witnessFileName, logger) {
     You should have received a copy of the GNU General Public License
     along with snarkJS. If not, see <https://www.gnu.org/licenses/>.
 */
-const {unstringifyBigInts: unstringifyBigInts$6} = ffjavascript.utils;
+const {unstringifyBigInts: unstringifyBigInts$8} = ffjavascript.utils;
 
 async function plonkFullProve$1(_input, wasmFile, zkeyFileName, logger) {
-    const input = unstringifyBigInts$6(_input);
+    const input = unstringifyBigInts$8(_input);
 
     const wtns= {
         type: "mem"
@@ -7351,14 +7351,14 @@ async function plonkFullProve$1(_input, wasmFile, zkeyFileName, logger) {
     You should have received a copy of the GNU General Public License along with
     snarkjs. If not, see <https://www.gnu.org/licenses/>.
 */
-const {unstringifyBigInts: unstringifyBigInts$5} = ffjavascript.utils;
+const {unstringifyBigInts: unstringifyBigInts$7} = ffjavascript.utils;
 const { keccak256 } = jsSha3__default["default"];
 
 
 async function plonkVerify$1(_vk_verifier, _publicSignals, _proof, logger) {
-    let vk_verifier = unstringifyBigInts$5(_vk_verifier);
-    let proof = unstringifyBigInts$5(_proof);
-    let publicSignals = unstringifyBigInts$5(_publicSignals);
+    let vk_verifier = unstringifyBigInts$7(_vk_verifier);
+    let proof = unstringifyBigInts$7(_proof);
+    let publicSignals = unstringifyBigInts$7(_publicSignals);
 
     const curve = await getCurveFromName(vk_verifier.curve);
 
@@ -7752,7 +7752,7 @@ async function isValidPairing(curve, proof, challanges, vk, E, F) {
     You should have received a copy of the GNU General Public License
     along with snarkJS. If not, see <https://www.gnu.org/licenses/>.
 */
-const { unstringifyBigInts: unstringifyBigInts$4} = ffjavascript.utils;
+const { unstringifyBigInts: unstringifyBigInts$6} = ffjavascript.utils;
 
 function i2hex(i) {
     return ("0" + i.toString(16)).slice(-2);
@@ -7766,8 +7766,8 @@ function p256(n) {
 }
 
 async function plonkExportSolidityCallData(_proof, _pub) {
-    const proof = unstringifyBigInts$4(_proof);
-    const pub = unstringifyBigInts$4(_pub);
+    const proof = unstringifyBigInts$6(_proof);
+    const pub = unstringifyBigInts$6(_pub);
 
     const curve = await getCurveFromName(proof.curve);
     const G1 = curve.G1;
@@ -7822,12 +7822,12 @@ async function plonkExportSolidityCallData(_proof, _pub) {
     You should have received a copy of the GNU General Public License
     along with snarkJS. If not, see <https://www.gnu.org/licenses/>.
 */
-const {unstringifyBigInts: unstringifyBigInts$3} = ffjavascript.utils;
+const {unstringifyBigInts: unstringifyBigInts$5} = ffjavascript.utils;
 
 
 async function wtnsDebug$1(_input, wasmFileName, wtnsFileName, symName, options, logger) {
 
-    const input = unstringifyBigInts$3(_input);
+    const input = unstringifyBigInts$5(_input);
 
     const fdWasm = await fastFile__namespace.readExisting(wasmFileName);
     const wasm = await fdWasm.read(fdWasm.totalSize);
@@ -7973,10 +7973,45 @@ async function readG1$1(fd, curve, toObject) {
     return toObject ? curve.G1.toObject(res) : res;
 }
 
-const {stringifyBigInts: stringifyBigInts$1, unstringifyBigInts: unstringifyBigInts$2} = ffjavascript.utils;
+const {unstringifyBigInts: unstringifyBigInts$4} = ffjavascript.utils;
+
+async function saverEncrypt(_saverPk, _plaintexts, r, G_is) {
+    const saverPk = unstringifyBigInts$4(_saverPk);
+    const plaintexts = unstringifyBigInts$4(_plaintexts);
+
+    if (saverPk.X.length !== plaintexts.length) {
+        throw new Error("Plaintexts length doesn't correspond to public key");
+    }
+
+    const curve = await getCurveFromName(saverPk.curve);
+    const G1 = curve.G1;
+
+    return {
+        c_0: G1.toObject(G1.toAffine(
+            G1.timesFr(G1.fromObject(saverPk.X_0), r)
+        )),
+        c: _plaintexts.map((s, i) =>
+            G1.toObject(G1.toAffine(
+                G1.add(
+                    G1.timesFr(G1.fromObject(saverPk.X[i]), r),
+                    G1.timesScalar(G_is[i], s)
+                )
+            ))
+        ),
+        psi: G1.toObject(G1.toAffine(
+            G1.add(
+                G1.timesFr(G1.fromObject(saverPk.P_1), r),
+                saverPk.Y.map((Y_i, i) => G1.timesScalar(G1.fromObject(Y_i), plaintexts[i]))
+                    .reduce((acc, cur) => G1.add(acc, cur))
+            )
+        ))
+    };
+}
+
+const {stringifyBigInts: stringifyBigInts$1, unstringifyBigInts: unstringifyBigInts$3} = ffjavascript.utils;
 
 // Encrypts the first n public inputs
-async function saverEncrypt$1(_input, wasmFile, zkeyFileName, _saverPk, logger) {
+async function saverEncryptThenProve$1(_input, wasmFile, zkeyFileName, _saverPk, logger) {
     const { fd: fdZKey, sections: sectionsZKey } = await binFileUtils__namespace.readBinFile(zkeyFileName, "zkey", 2);
     const zkey = await readHeader$1(fdZKey, sectionsZKey);
     if (zkey.protocol != "groth16") {
@@ -7998,7 +8033,7 @@ async function saverEncrypt$1(_input, wasmFile, zkeyFileName, _saverPk, logger) 
     /*
         Start witness calculation
     */
-    const input = unstringifyBigInts$2(_input);
+    const input = unstringifyBigInts$3(_input);
     const wtnsObject = {
         type: "mem"
     };
@@ -8018,7 +8053,7 @@ async function saverEncrypt$1(_input, wasmFile, zkeyFileName, _saverPk, logger) 
     if (logger) logger.debug("Reading Wtns");
     const buffWitness = await binFileUtils__namespace.readSection(fdWtns, sectionsWtns, 2);
 
-    const saverPk = unstringifyBigInts$2(_saverPk);
+    const saverPk = unstringifyBigInts$3(_saverPk);
 
     // TODO: for now, we encrypt the first n public inputs (including public outputs first)
     const encryptedSignals = [];
@@ -8031,26 +8066,7 @@ async function saverEncrypt$1(_input, wasmFile, zkeyFileName, _saverPk, logger) 
         Create ciphertext
     */
     const r = Fr.random();
-    const ciphertext = {
-        c_0: G1.toObject(G1.toAffine(
-            G1.timesFr(G1.fromObject(saverPk.X_0), r)
-        )),
-        c: encryptedSignals.map((s, i) =>
-            G1.toObject(G1.toAffine(
-                G1.add(
-                    G1.timesFr(G1.fromObject(saverPk.X[i]), r),
-                    G1.timesScalar(IC[i + 1], s)
-                )
-            ))
-        ),
-        psi: G1.toObject(G1.toAffine(
-            G1.add(
-                G1.timesFr(G1.fromObject(saverPk.P_1), r),
-                saverPk.Y.map((Y_i, i) => G1.timesScalar(G1.fromObject(Y_i), encryptedSignals[i]))
-                    .reduce((acc, cur) => G1.add(acc, cur))
-            )
-        ))
-    };
+    const ciphertext = await saverEncrypt(saverPk, encryptedSignals, r, IC.slice(1));
 
     await fdZKey.close();
     await fdWtns.close();
@@ -8058,7 +8074,7 @@ async function saverEncrypt$1(_input, wasmFile, zkeyFileName, _saverPk, logger) 
     const { proof, publicSignals } = await groth16Prove$1(zkeyFileName, wtnsObject, logger);
     proof.pi_c = stringifyBigInts$1(G1.toObject(G1.toAffine(
         G1.add(
-            G1.fromObject(unstringifyBigInts$2(proof.pi_c)),
+            G1.fromObject(unstringifyBigInts$3(proof.pi_c)),
             G1.timesFr(
                 G1.fromObject(saverPk.P_2),
                 r
@@ -8076,16 +8092,13 @@ async function readG1(fd, curve, toObject) {
     return toObject ? curve.G1.toObject(res) : res;
 }
 
-const {unstringifyBigInts: unstringifyBigInts$1} = ffjavascript.utils;
+const {unstringifyBigInts: unstringifyBigInts$2} = ffjavascript.utils;
 
-async function saverVerifyEncryption$1(_vk_verifier, _saverPk, _ciphertext, _publicSignals, _proof, logger ) {
-    const vk_verifier = unstringifyBigInts$1(_vk_verifier);
-    const saverPk = unstringifyBigInts$1(_saverPk);
-    const ciphertext = unstringifyBigInts$1(_ciphertext);
-    const publicSignals = unstringifyBigInts$1(_publicSignals);
-    const proof = unstringifyBigInts$1(_proof);
+async function saverVerifyEncryption(_saverPk, _ciphertext, logger) {
+    const saverPk = unstringifyBigInts$2(_saverPk);
+    const ciphertext = unstringifyBigInts$2(_ciphertext);
 
-    const curve = await getCurveFromName(vk_verifier.curve);
+    const curve = await getCurveFromName(saverPk.curve);
 
     const ct_c_0 = curve.G1.fromObject(ciphertext.c_0);
     const ct_c = ciphertext.c.map(c_i => curve.G1.fromObject(c_i));
@@ -8103,6 +8116,28 @@ async function saverVerifyEncryption$1(_vk_verifier, _saverPk, _ciphertext, _pub
     }
 
     if (logger) logger.info("Valid ciphertext");
+    return true;
+}
+
+const {unstringifyBigInts: unstringifyBigInts$1} = ffjavascript.utils;
+
+async function saverVerifyEncryptionAndProof$1(_vk_verifier, _saverPk, _ciphertext, _publicSignals, _proof, logger ) {
+    const vk_verifier = unstringifyBigInts$1(_vk_verifier);
+    const saverPk = unstringifyBigInts$1(_saverPk);
+    const ciphertext = unstringifyBigInts$1(_ciphertext);
+    const publicSignals = unstringifyBigInts$1(_publicSignals);
+    const proof = unstringifyBigInts$1(_proof);
+
+    const curve = await getCurveFromName(vk_verifier.curve);
+
+    const ct_c_0 = curve.G1.fromObject(ciphertext.c_0);
+    const ct_c = ciphertext.c.map(c_i => curve.G1.fromObject(c_i));
+
+    const validEncryption = await saverVerifyEncryption(saverPk, ciphertext, logger);
+
+    if (!validEncryption) {
+        return false;
+    }
 
     const IC0 = curve.G1.fromObject(vk_verifier.IC[0]);
     const IC = new Uint8Array(curve.G1.F.n8*2 * publicSignals.length);
@@ -8455,18 +8490,18 @@ const commands = [
         action: saverKeygen
     },
     {
-        cmd: "saver encrypt [input.json] [circuit.wasm] [circuit.zkey] [saver_pk.json] [proof.json] [public.json] [ciphertext.json]",
+        cmd: "saver encrypt-then-prove [input.json] [circuit.wasm] [circuit.zkey] [saver_pk.json] [proof.json] [public.json] [ciphertext.json]",
         description: "Encrypt and prove using SAVER",
         alias: ["se"],
         options: "-verbose|v -entropy|e",
-        action: saverEncrypt
+        action: saverEncryptThenProve
     },
     {
-        cmd: "saver verify [verification_key.json] [saver_pk.json] [ciphertext.json] [public.json] [proof.json]",
+        cmd: "saver verify encryption-and-proof [verification_key.json] [saver_pk.json] [ciphertext.json] [public.json] [proof.json]",
         description: "Verify a SAVER encryption and the corresponding proof",
         alias: ["sv"],
         options: "-verbose|v",
-        action: saverVerifyEncryption
+        action: saverVerifyEncryptionAndProof
     },
     {
         cmd: "saver decrypt [saver_sk.json] [saver_vk.json] [ciphertext.json] [plaintext.json] [nu.json]",
@@ -9293,8 +9328,8 @@ async function saverKeygen(params, options) {
     return 0;
 }
 
-// saver encrypt [input.json] [circuit.wasm] [circuit.zkey] [saver_pk.json] [proof.json] [public.json] [ciphertext.json]
-async function saverEncrypt(params, options) {
+// saver encrypt-then-prove [input.json] [circuit.wasm] [circuit.zkey] [saver_pk.json] [proof.json] [public.json] [ciphertext.json]
+async function saverEncryptThenProve(params, options) {
     const inputName = params[0] || "input.json";
     const wasmName = params[1] || "circuit.wasm";
     const zkeyName = params[2] || "circuit_final.zkey";
@@ -9308,7 +9343,7 @@ async function saverEncrypt(params, options) {
     const input = JSON.parse(await fs__default["default"].promises.readFile(inputName, "utf8"));
     const saverPk = JSON.parse(await fs__default["default"].promises.readFile(saverPkName, "utf8"));
 
-    const { proof, publicSignals, ciphertext } = await saverEncrypt$1(input, wasmName, zkeyName, saverPk, logger);
+    const { proof, publicSignals, ciphertext } = await saverEncryptThenProve$1(input, wasmName, zkeyName, saverPk, logger);
 
     await fs__default["default"].promises.writeFile(proofName, JSON.stringify(stringifyBigInts(proof), null, 1), "utf-8");
     await fs__default["default"].promises.writeFile(publicName, JSON.stringify(stringifyBigInts(publicSignals), null, 1), "utf-8");
@@ -9317,8 +9352,8 @@ async function saverEncrypt(params, options) {
     return 0;
 }
 
-// saver verify [verification_key.json] [saver_pk.json] [ciphertext.json] [public.json] [proof.json]
-async function saverVerifyEncryption(params, options) {
+// saver verify encryption-and-proof [verification_key.json] [saver_pk.json] [ciphertext.json] [public.json] [proof.json]
+async function saverVerifyEncryptionAndProof(params, options) {
     const verificationKeyName = params[0] || "verification_key.json";
     const saverPkName = params[1] || "saver_pk.json";
     const ciphertextName = params[2] || "ciphertext.json";
@@ -9333,7 +9368,7 @@ async function saverVerifyEncryption(params, options) {
 
     if (options.verbose) Logger__default["default"].setLogLevel("DEBUG");
 
-    const isValid = await saverVerifyEncryption$1(verificationKey, saverPk, ciphertext, pub, proof, logger);
+    const isValid = await saverVerifyEncryptionAndProof$1(verificationKey, saverPk, ciphertext, pub, proof, logger);
     return isValid ? 0 : 1;
 }
 
