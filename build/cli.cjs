@@ -7976,7 +7976,7 @@ async function readG1$1(fd, curve, toObject) {
 const {stringifyBigInts: stringifyBigInts$1, unstringifyBigInts: unstringifyBigInts$2} = ffjavascript.utils;
 
 // Encrypts the first n public inputs
-async function saverEncrypt$1(_input, wasmFile, zkeyFileName, _saverPk, entropy, logger) {
+async function saverEncrypt$1(_input, wasmFile, zkeyFileName, _saverPk, logger) {
     const { fd: fdZKey, sections: sectionsZKey } = await binFileUtils__namespace.readBinFile(zkeyFileName, "zkey", 2);
     const zkey = await readHeader$1(fdZKey, sectionsZKey);
     if (zkey.protocol != "groth16") {
@@ -8030,10 +8030,7 @@ async function saverEncrypt$1(_input, wasmFile, zkeyFileName, _saverPk, entropy,
     /*
         Create ciphertext
     */
-    if (logger) logger.info("Generating randomness");
-    const rng = await getRandomRng(entropy);
-
-    const r = Fr.fromRng(rng);
+    const r = Fr.random();
     const ciphertext = {
         c_0: G1.toObject(G1.toAffine(
             G1.timesFr(G1.fromObject(saverPk.X_0), r)
@@ -9311,7 +9308,7 @@ async function saverEncrypt(params, options) {
     const input = JSON.parse(await fs__default["default"].promises.readFile(inputName, "utf8"));
     const saverPk = JSON.parse(await fs__default["default"].promises.readFile(saverPkName, "utf8"));
 
-    const { proof, publicSignals, ciphertext } = await saverEncrypt$1(input, wasmName, zkeyName, saverPk, options.entropy, logger);
+    const { proof, publicSignals, ciphertext } = await saverEncrypt$1(input, wasmName, zkeyName, saverPk, logger);
 
     await fs__default["default"].promises.writeFile(proofName, JSON.stringify(stringifyBigInts(proof), null, 1), "utf-8");
     await fs__default["default"].promises.writeFile(publicName, JSON.stringify(stringifyBigInts(publicSignals), null, 1), "utf-8");

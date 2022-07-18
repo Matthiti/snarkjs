@@ -1159,7 +1159,7 @@ async function saverEncrypt(params, options) {
     const input = JSON.parse(await fs.promises.readFile(inputName, "utf8"));
     const saverPk = JSON.parse(await fs.promises.readFile(saverPkName, "utf8"));
 
-    const { proof, publicSignals, ciphertext } = await saver.encrypt(input, wasmName, zkeyName, saverPk, options.entropy, logger);
+    const { proof, publicSignals, ciphertext } = await saver.encrypt(input, wasmName, zkeyName, saverPk, logger);
 
     await fs.promises.writeFile(proofName, JSON.stringify(stringifyBigInts(proof), null, 1), "utf-8");
     await fs.promises.writeFile(publicName, JSON.stringify(stringifyBigInts(publicSignals), null, 1), "utf-8");

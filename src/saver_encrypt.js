@@ -9,7 +9,7 @@ import groth16Prove from "./groth16_prove.js";
 const {stringifyBigInts, unstringifyBigInts} = utils;
 
 // Encrypts the first n public inputs
-export default async function saverEncrypt(_input, wasmFile, zkeyFileName, _saverPk, entropy, logger) {
+export default async function saverEncrypt(_input, wasmFile, zkeyFileName, _saverPk, logger) {
     const { fd: fdZKey, sections: sectionsZKey } = await binFileUtils.readBinFile(zkeyFileName, "zkey", 2);
     const zkey = await zkeyUtils.readHeader(fdZKey, sectionsZKey);
     if (zkey.protocol != "groth16") {
@@ -63,10 +63,7 @@ export default async function saverEncrypt(_input, wasmFile, zkeyFileName, _save
     /*
         Create ciphertext
     */
-    if (logger) logger.info("Generating randomness");
-    const rng = await misc.getRandomRng(entropy);
-
-    const r = Fr.fromRng(rng);
+    const r = Fr.random();
     const ciphertext = {
         c_0: G1.toObject(G1.toAffine(
             G1.timesFr(G1.fromObject(saverPk.X_0), r)
