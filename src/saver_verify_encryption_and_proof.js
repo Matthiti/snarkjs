@@ -3,7 +3,7 @@ import {Scalar, utils} from "ffjavascript";
 import saverVerifyEncryption from "./saver_verify_encryption.js";
 const {unstringifyBigInts} = utils;
 
-export default async function saverVerifyEncryptionAndProof(_vk_verifier, _saverPk, _ciphertext, _publicSignals, _proof, logger ) {
+export default async function saverVerifyEncryptionAndProof(_vk_verifier, _saverPk, _ciphertext, _publicSignals, _proof, logger) {
     const vk_verifier = unstringifyBigInts(_vk_verifier);
     const saverPk = unstringifyBigInts(_saverPk);
     const ciphertext = unstringifyBigInts(_ciphertext);

@@ -12,6 +12,7 @@ export default async function saverEncrypt(_saverPk, _plaintexts, r) {
 
     const curve = await curves.getCurveFromName(saverPk.curve);
     const G1 = curve.G1;
+    const Fr = curve.Fr;
 
     return {
         c_0: G1.toObject(G1.toAffine(
@@ -21,14 +22,14 @@ export default async function saverEncrypt(_saverPk, _plaintexts, r) {
             G1.toObject(G1.toAffine(
                 G1.add(
                     G1.timesFr(G1.fromObject(saverPk.X[i]), r),
-                    G1.timesScalar(G1.fromObject(saverPk.G_is[i]), s)
+                    G1.timesFr(G1.fromObject(saverPk.G_is[i]), Fr.e(s))
                 )
             ))
         ),
         psi: G1.toObject(G1.toAffine(
             G1.add(
                 G1.timesFr(G1.fromObject(saverPk.P_1), r),
-                saverPk.Y.map((Y_i, i) => G1.timesScalar(G1.fromObject(Y_i), plaintexts[i]))
+                saverPk.Y.map((Y_i, i) => G1.timesFr(G1.fromObject(Y_i), Fr.e(plaintexts[i])))
                     .reduce((acc, cur) => G1.add(acc, cur))
             )
         ))

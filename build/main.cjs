@@ -7878,6 +7878,7 @@ async function saverEncrypt(_saverPk, _plaintexts, r) {
 
     const curve = await getCurveFromName(saverPk.curve);
     const G1 = curve.G1;
+    const Fr = curve.Fr;
 
     return {
         c_0: G1.toObject(G1.toAffine(
@@ -7887,14 +7888,14 @@ async function saverEncrypt(_saverPk, _plaintexts, r) {
             G1.toObject(G1.toAffine(
                 G1.add(
                     G1.timesFr(G1.fromObject(saverPk.X[i]), r),
-                    G1.timesScalar(G1.fromObject(saverPk.G_is[i]), s)
+                    G1.timesFr(G1.fromObject(saverPk.G_is[i]), Fr.e(s))
                 )
             ))
         ),
         psi: G1.toObject(G1.toAffine(
             G1.add(
                 G1.timesFr(G1.fromObject(saverPk.P_1), r),
-                saverPk.Y.map((Y_i, i) => G1.timesScalar(G1.fromObject(Y_i), plaintexts[i]))
+                saverPk.Y.map((Y_i, i) => G1.timesFr(G1.fromObject(Y_i), Fr.e(plaintexts[i])))
                     .reduce((acc, cur) => G1.add(acc, cur))
             )
         ))
@@ -7999,7 +8000,7 @@ async function saverVerifyEncryption(_saverPk, _ciphertext, logger) {
 
 const {unstringifyBigInts: unstringifyBigInts$1} = ffjavascript.utils;
 
-async function saverVerifyEncryptionAndProof(_vk_verifier, _saverPk, _ciphertext, _publicSignals, _proof, logger ) {
+async function saverVerifyEncryptionAndProof(_vk_verifier, _saverPk, _ciphertext, _publicSignals, _proof, logger) {
     const vk_verifier = unstringifyBigInts$1(_vk_verifier);
     const saverPk = unstringifyBigInts$1(_saverPk);
     const ciphertext = unstringifyBigInts$1(_ciphertext);
@@ -8070,19 +8071,23 @@ async function saverDecrypt(_saverSk, _saverVk, _ciphertext) {
     const ciphertext = unstringifyBigInts(_ciphertext);
 
     const curve = await getCurveFromName(saverSk.curve);
+    const G1 = curve.G1;
+    const G2 = curve.G2;
+    const Gt = curve.Gt;
+    const Fr = curve.Fr;
 
-    const ct_c_0 = curve.G1.fromObject(ciphertext.c_0);
-    const ct_c = ciphertext.c.map(c_i => curve.G1.fromObject(c_i));
-    const vk_V_n = saverVk.V_n.map(V_i => curve.G2.fromObject(V_i));
-    const vk_V_2n = saverVk.V_2n.map(V_2i => curve.G2.fromObject(V_2i));
-    const rho = curve.Fr.fromObject(saverSk.rho);
+    const ct_c_0 = G1.fromObject(ciphertext.c_0);
+    const ct_c = ciphertext.c.map(c_i => G1.fromObject(c_i));
+    const vk_V_n = saverVk.V_n.map(V_i => G2.fromObject(V_i));
+    const vk_V_2n = saverVk.V_2n.map(V_2i => G2.fromObject(V_2i));
+    const rho = Fr.fromObject(saverSk.rho);
 
-    const m = await Promise.all(ct_c.map(async (c_i, i) => curve.Gt.toObject(curve.Gt.sub(
+    const m = await Promise.all(ct_c.map(async (c_i, i) => Gt.toObject(Gt.sub(
         await curve.pairing(c_i, vk_V_2n[i]),
-        await curve.pairing(curve.G1.timesFr(ct_c_0, rho), vk_V_n[i])
+        await curve.pairing(G1.timesFr(ct_c_0, rho), vk_V_n[i])
     ))));
 
-    const nu = curve.G1.toObject(curve.G1.timesFr(ct_c_0, rho));
+    const nu = G1.toObject(G1.toAffine(G1.timesFr(ct_c_0, rho)));
     return { m, nu };
 }
 
