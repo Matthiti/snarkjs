@@ -3721,7 +3721,7 @@ async function writeG2(fd, curve, p) {
     await fd.write(buff);
 }
 
-async function readG1$2(fd, curve, toObject) {
+async function readG1$1(fd, curve, toObject) {
     const buff = await fd.read(curve.G1.F.n8*2);
     const res = curve.G1.fromRprLEM(buff, 0);
     return toObject ? curve.G1.toObject(res) : res;
@@ -3773,13 +3773,13 @@ async function readHeaderGroth16(fd, sections, toObject) {
     zkey.nPublic = await fd.readULE32();
     zkey.domainSize = await fd.readULE32();
     zkey.power = log2(zkey.domainSize);
-    zkey.vk_alpha_1 = await readG1$2(fd, zkey.curve, toObject);
-    zkey.vk_beta_1 = await readG1$2(fd, zkey.curve, toObject);
+    zkey.vk_alpha_1 = await readG1$1(fd, zkey.curve, toObject);
+    zkey.vk_beta_1 = await readG1$1(fd, zkey.curve, toObject);
     zkey.vk_beta_2 = await readG2(fd, zkey.curve, toObject);
     zkey.vk_gamma_2 = await readG2(fd, zkey.curve, toObject);
-    zkey.vk_delta_1 = await readG1$2(fd, zkey.curve, toObject);
+    zkey.vk_delta_1 = await readG1$1(fd, zkey.curve, toObject);
     zkey.vk_delta_2 = await readG2(fd, zkey.curve, toObject);
-    zkey.vk_neg_gamma_1 = await readG1$2(fd, zkey.curve, toObject);
+    zkey.vk_neg_gamma_1 = await readG1$1(fd, zkey.curve, toObject);
     await binFileUtils__namespace.endReadSection(fd);
 
     return zkey;
@@ -3814,14 +3814,14 @@ async function readHeaderPlonk(fd, sections, toObject) {
     zkey.k1 = await fd.read(n8r);
     zkey.k2 = await fd.read(n8r);
 
-    zkey.Qm = await readG1$2(fd, zkey.curve, toObject);
-    zkey.Ql = await readG1$2(fd, zkey.curve, toObject);
-    zkey.Qr = await readG1$2(fd, zkey.curve, toObject);
-    zkey.Qo = await readG1$2(fd, zkey.curve, toObject);
-    zkey.Qc = await readG1$2(fd, zkey.curve, toObject);
-    zkey.S1 = await readG1$2(fd, zkey.curve, toObject);
-    zkey.S2 = await readG1$2(fd, zkey.curve, toObject);
-    zkey.S3 = await readG1$2(fd, zkey.curve, toObject);
+    zkey.Qm = await readG1$1(fd, zkey.curve, toObject);
+    zkey.Ql = await readG1$1(fd, zkey.curve, toObject);
+    zkey.Qr = await readG1$1(fd, zkey.curve, toObject);
+    zkey.Qo = await readG1$1(fd, zkey.curve, toObject);
+    zkey.Qc = await readG1$1(fd, zkey.curve, toObject);
+    zkey.S1 = await readG1$1(fd, zkey.curve, toObject);
+    zkey.S2 = await readG1$1(fd, zkey.curve, toObject);
+    zkey.S3 = await readG1$1(fd, zkey.curve, toObject);
     zkey.X_2 = await readG2(fd, zkey.curve, toObject);
 
     await binFileUtils__namespace.endReadSection(fd);
@@ -3846,7 +3846,7 @@ async function readZKey(fileName, toObject) {
     await binFileUtils__namespace.startReadUniqueSection(fd, sections, 3);
     zkey.IC = [];
     for (let i=0; i<= zkey.nPublic; i++) {
-        const P = await readG1$2(fd, curve, toObject);
+        const P = await readG1$1(fd, curve, toObject);
         zkey.IC.push(P);
     }
     await binFileUtils__namespace.endReadSection(fd);
@@ -3876,7 +3876,7 @@ async function readZKey(fileName, toObject) {
     await binFileUtils__namespace.startReadUniqueSection(fd, sections, 5);
     zkey.A = [];
     for (let i=0; i<zkey.nVars; i++) {
-        const A = await readG1$2(fd, curve, toObject);
+        const A = await readG1$1(fd, curve, toObject);
         zkey.A[i] = A;
     }
     await binFileUtils__namespace.endReadSection(fd);
@@ -3887,7 +3887,7 @@ async function readZKey(fileName, toObject) {
     await binFileUtils__namespace.startReadUniqueSection(fd, sections, 6);
     zkey.B1 = [];
     for (let i=0; i<zkey.nVars; i++) {
-        const B1 = await readG1$2(fd, curve, toObject);
+        const B1 = await readG1$1(fd, curve, toObject);
 
         zkey.B1[i] = B1;
     }
@@ -3910,7 +3910,7 @@ async function readZKey(fileName, toObject) {
     await binFileUtils__namespace.startReadUniqueSection(fd, sections, 8);
     zkey.C = [];
     for (let i=zkey.nPublic+1; i<zkey.nVars; i++) {
-        const C = await readG1$2(fd, curve, toObject);
+        const C = await readG1$1(fd, curve, toObject);
 
         zkey.C[i] = C;
     }
@@ -3922,7 +3922,7 @@ async function readZKey(fileName, toObject) {
     await binFileUtils__namespace.startReadUniqueSection(fd, sections, 9);
     zkey.hExps = [];
     for (let i=0; i<zkey.domainSize; i++) {
-        const H = await readG1$2(fd, curve, toObject);
+        const H = await readG1$1(fd, curve, toObject);
         zkey.hExps.push(H);
     }
     await binFileUtils__namespace.endReadSection(fd);
@@ -3941,9 +3941,9 @@ async function readZKey(fileName, toObject) {
 
 async function readContribution(fd, curve, toObject) {
     const c = {delta:{}};
-    c.deltaAfter = await readG1$2(fd, curve, toObject);
-    c.delta.g1_s = await readG1$2(fd, curve, toObject);
-    c.delta.g1_sx = await readG1$2(fd, curve, toObject);
+    c.deltaAfter = await readG1$1(fd, curve, toObject);
+    c.delta.g1_s = await readG1$1(fd, curve, toObject);
+    c.delta.g1_sx = await readG1$1(fd, curve, toObject);
     c.delta.g2_spx = await readG2(fd, curve, toObject);
     c.transcript = await fd.read(64);
     c.type = await fd.readULE32();
@@ -7914,7 +7914,7 @@ async function saverKeygen$1(zkeyName, n, entropy, logger) {
     await binFileUtils__namespace.startReadUniqueSection(fd, sections, 3);
     const IC = [];
     for (let i = 0; i <= zkey.nPublic; i++) {
-        const P = await readG1$1(fd, curve, false);
+        const P = await readG1(fd, curve, false);
         IC.push(P);
     }
     await binFileUtils__namespace.endReadSection(fd);
@@ -7946,6 +7946,7 @@ async function saverKeygen$1(zkeyName, n, entropy, logger) {
             zkey.vk_neg_gamma_1,
             s.reduce((acc, cur) => Fr.add(acc, cur), Fr.one)
         ))),
+        G_is: IC.slice(1, n + 1).map(G_i => G1.toObject(G1.toAffine(G_i))),
         curve: curve.name
     };
 
@@ -7967,7 +7968,7 @@ async function saverKeygen$1(zkeyName, n, entropy, logger) {
 }
 
 // Copied from zkey_utils.js
-async function readG1$1(fd, curve, toObject) {
+async function readG1(fd, curve, toObject) {
     const buff = await fd.read(curve.G1.F.n8*2);
     const res = curve.G1.fromRprLEM(buff, 0);
     return toObject ? curve.G1.toObject(res) : res;
@@ -7975,7 +7976,7 @@ async function readG1$1(fd, curve, toObject) {
 
 const {unstringifyBigInts: unstringifyBigInts$4} = ffjavascript.utils;
 
-async function saverEncrypt(_saverPk, _plaintexts, G_is, r) {
+async function saverEncrypt(_saverPk, _plaintexts, r) {
     const saverPk = unstringifyBigInts$4(_saverPk);
     const plaintexts = unstringifyBigInts$4(_plaintexts);
 
@@ -7994,7 +7995,7 @@ async function saverEncrypt(_saverPk, _plaintexts, G_is, r) {
             G1.toObject(G1.toAffine(
                 G1.add(
                     G1.timesFr(G1.fromObject(saverPk.X[i]), r),
-                    G1.timesScalar(G_is[i], s)
+                    G1.timesScalar(G1.fromObject(saverPk.G_is[i]), s)
                 )
             ))
         ),
@@ -8021,14 +8022,6 @@ async function saverEncryptThenProve$1(_input, wasmFile, zkeyFileName, _saverPk,
     const curve = await getCurveFromQ(zkey.q);
     const Fr = curve.Fr;
     const G1 = curve.G1;
-
-    await binFileUtils__namespace.startReadUniqueSection(fdZKey, sectionsZKey, 3);
-    const IC = [];
-    for (let i = 0; i <= zkey.nPublic; i++) {
-        const P = await readG1(fdZKey, curve, false);
-        IC.push(P);
-    }
-    await binFileUtils__namespace.endReadSection(fdZKey);
 
     /*
         Start witness calculation
@@ -8066,7 +8059,7 @@ async function saverEncryptThenProve$1(_input, wasmFile, zkeyFileName, _saverPk,
         Create ciphertext
     */
     const r = Fr.random();
-    const ciphertext = await saverEncrypt(saverPk, encryptedSignals, IC.slice(1), r);
+    const ciphertext = await saverEncrypt(saverPk, encryptedSignals, r);
 
     await fdZKey.close();
     await fdWtns.close();
@@ -8083,13 +8076,6 @@ async function saverEncryptThenProve$1(_input, wasmFile, zkeyFileName, _saverPk,
     )));
 
     return { proof, publicSignals: publicSignals.slice(encryptedSignals.length), ciphertext };
-}
-
-// Copied from zkey_utils.js
-async function readG1(fd, curve, toObject) {
-    const buff = await fd.read(curve.G1.F.n8*2);
-    const res = curve.G1.fromRprLEM(buff, 0);
-    return toObject ? curve.G1.toObject(res) : res;
 }
 
 const {unstringifyBigInts: unstringifyBigInts$2} = ffjavascript.utils;

@@ -50,6 +50,7 @@ export default async function saverKeygen(zkeyName, n, entropy, logger) {
             zkey.vk_neg_gamma_1,
             s.reduce((acc, cur) => Fr.add(acc, cur), Fr.one)
         ))),
+        G_is: IC.slice(1, n + 1).map(G_i => G1.toObject(G1.toAffine(G_i))),
         curve: curve.name
     };
 

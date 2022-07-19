@@ -21,14 +21,6 @@ export default async function saverEncryptThenProve(_input, wasmFile, zkeyFileNa
     const Fr = curve.Fr;
     const G1 = curve.G1;
 
-    await binFileUtils.startReadUniqueSection(fdZKey, sectionsZKey, 3);
-    const IC = [];
-    for (let i = 0; i <= zkey.nPublic; i++) {
-        const P = await readG1(fdZKey, curve, false);
-        IC.push(P);
-    }
-    await binFileUtils.endReadSection(fdZKey);
-
     /*
         Start witness calculation
     */
@@ -65,7 +57,7 @@ export default async function saverEncryptThenProve(_input, wasmFile, zkeyFileNa
         Create ciphertext
     */
     const r = Fr.random();
-    const ciphertext = await saverEncrypt(saverPk, encryptedSignals, IC.slice(1), r);
+    const ciphertext = await saverEncrypt(saverPk, encryptedSignals, r);
 
     await fdZKey.close();
     await fdWtns.close();
@@ -82,11 +74,4 @@ export default async function saverEncryptThenProve(_input, wasmFile, zkeyFileNa
     )));
 
     return { proof, publicSignals: publicSignals.slice(encryptedSignals.length), ciphertext };
-}
-
-// Copied from zkey_utils.js
-async function readG1(fd, curve, toObject) {
-    const buff = await fd.read(curve.G1.F.n8*2);
-    const res = curve.G1.fromRprLEM(buff, 0);
-    return toObject ? curve.G1.toObject(res) : res;
 }
