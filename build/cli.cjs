@@ -8474,7 +8474,7 @@ const commands = [
         action: plonkVerify
     },
     {
-        cmd: "saver keygen [circuit.zkey] [saver_pk.json] [saver_sk.json] [saver_vk.json] [n_encryptions]",
+        cmd: "saver keygen [n_encryptions] [circuit.zkey] [saver_pk.json] [saver_sk.json] [saver_vk.json]",
         description: "Generate keys for SAVER",
         alias: ["sk"],
         options: "-verbose|v -entropy|e",
@@ -9300,13 +9300,13 @@ async function plonkVerify(params, options) {
     }
 }
 
-// saver keygen [circuit.zkey] [saver_pk.json] [saver_sk.json] [saver_vk.json]
+// saver keygen [n_encryptions] [circuit.zkey] [saver_pk.json] [saver_sk.json] [saver_vk.json]
 async function saverKeygen(params, options) {
     const zkeyName = params[0] || "circuit_final.zkey";
-    const saverPkName = params[1] || "saver_pk.json";
-    const saverSkName = params[2] || "saver_sk.json";
-    const saverVkName = params[3] || "saver_vk.json";
-    const n = parseInt(params[4]) || 1;
+    const n = parseInt(params[1]) || 1;
+    const saverPkName = params[2] || "saver_pk.json";
+    const saverSkName = params[3] || "saver_sk.json";
+    const saverVkName = params[4] || "saver_vk.json";
 
     if (options.verbose) Logger__default["default"].setLogLevel("DEBUG");
 
